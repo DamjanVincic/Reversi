@@ -6,6 +6,105 @@ WHITE = 2
 
 directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]
 
+
+def evaluate(board, player):
+    opponent = WHITE if player == BLACK else BLACK
+    player_tiles = opponent_tiles = player_front_tiles = opponent_front_tiles = 0
+    # d = p = f = c = l = m = 0
+    d = 0
+
+    weigths = [
+        [20, -3, 11, 8, 8, 11, -3, 20],
+        [-3, -7, -4, 1, 1, -4, -7, -3],
+        [11, -4, 2, 2, 2, 2, -4, 11],
+        [8, 1, 2, -3, -3, 2, 1, 8],
+        [8, 1, 2, -3, -3, 2, 1, 8],
+        [11, -4, 2, 2, 2, 2, -4, 11],
+        [-3, -7, -4, 1, 1, -4, -7, -3],
+        [20, -3, 11, 8, 8, 11, -3, 20]
+    ]
+
+    for i in range(8):
+        for j in range(8):
+            if board[i][j] == player:
+                d += weigths[i][j]
+                player_tiles += 1
+            elif board[i][j] == opponent:
+                d -= weigths[i][j]
+                opponent_tiles += 1
+
+            if board[i][j] != EMPTY:
+                for direction in directions:
+                    x = i + direction[0]
+                    y = j + direction[1]
+                    if 0 <= x <= 7 and 0 <= y <= 7 and board[x][y] == EMPTY:
+                        if board[i][j] == player:
+                            player_front_tiles += 1
+                        else:
+                            opponent_front_tiles += 1
+                        break
+    
+
+    if player_tiles > opponent_tiles:
+        p = (100.0 * player_tiles) / (player_tiles + opponent_tiles)
+    elif player_tiles < opponent_tiles:
+        p = -(100.0 * opponent_tiles) / (player_tiles + opponent_tiles)
+    else:
+        p = 0
+
+    if player_front_tiles > opponent_front_tiles:
+        f = -(100.0 * player_front_tiles) / (player_front_tiles + opponent_front_tiles)
+    elif player_front_tiles < opponent_front_tiles:
+        f = (100.0 * opponent_front_tiles) / (player_front_tiles + opponent_front_tiles)
+    else:
+        f = 0
+
+
+    player_tiles = opponent_tiles = 0
+    for i in [0, 7]:
+        for j in [0, 7]:
+            if board[i][j] == player:
+                player_tiles += 1
+            elif board[i][j] == opponent:
+                opponent_tiles += 1
+    c = 25 * (player_tiles - opponent_tiles)
+
+
+    corner_closeness = [
+        (0, 0, [(0, 1), (1, 1), (1, 0)]),
+        (0, 7, [(0, 6), (1, 6), (1, 7)]),
+        (7, 0, [(6, 0), (6, 1), (7, 1)]),
+        (7, 7, [(6, 7), (6, 6), (7, 6)])
+    ]
+
+    # my_corner_tiles = 0
+    # opp_corner_tiles = 0
+    player_tiles = opponent_tiles = 0
+
+    for x, y, adjacent_tiles in corner_closeness:
+        if board[x][y] == EMPTY:
+            for adj_x, adj_y in adjacent_tiles:
+                if board[adj_x][adj_y] == player:
+                    player_tiles += 1
+                elif board[adj_x][adj_y] == opponent:
+                    opponent_tiles += 1
+    l = -12.5 * (player_tiles - opponent_tiles)
+
+
+    player_valid_moves = len(get_valid_moves(board, player))
+    opponent_valid_moves = len(get_valid_moves(board, opponent))
+    
+    if player_valid_moves > opponent_valid_moves:
+        m = (100.0 * player_valid_moves) / (player_valid_moves + opponent_valid_moves)
+    elif player_valid_moves < opponent_valid_moves:
+        m = -(100.0 * opponent_valid_moves) / (player_valid_moves + opponent_valid_moves)
+    else:
+        m = 0
+
+    score = (10 * p) + (801.724 * c) + (382.026 * l) + (78.922 * m) + (74.396 * f) + (10 * d)
+    return score
+
+
 def is_valid_move(board, player, move):
     i, j = move
     if board[i][j] != EMPTY:
