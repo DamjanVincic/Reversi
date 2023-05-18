@@ -16,17 +16,19 @@ def is_valid_move(board, player, move):
         di, dj = direction
         new_i, new_j = i + di, j + dj
 
-        if new_i > 7 or new_i < 0 or new_j > 7 or new_j < 0:
-            return False
+        if not (0 <= new_i <= 7 and 0 <= new_j <= 7):
+            continue
         
         if board[new_i][new_j] == opponent:
-            while 0 <= new_i <= 7 and 0 <= new_j <= 7:
-                if board[new_i][new_j] == EMPTY:
-                    break
-                elif board[new_i][new_j] == player:
-                    return True
+            while True:
                 new_i += di
                 new_j += dj
+                if not (0 <= new_i <= 7 and 0 <= new_j <= 7):
+                    break
+                if board[new_i][new_j] == EMPTY:
+                    break
+                if board[new_i][new_j] == player:
+                    return True
     return False
 
 def get_valid_moves(board, player):
