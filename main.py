@@ -1,4 +1,6 @@
 from tabulate import tabulate
+import copy
+from node import Node
 
 EMPTY = 0
 BLACK = 1
@@ -105,6 +107,53 @@ def evaluate(board, player):
     return score
 
 
+def generate_game_tree(board, player, depth):
+    node = Node(board, player)
+    if depth == 0 or len(get_valid_moves(board, player)) == 0:
+        node.value = evaluate(board, player)
+        return node
+
+    valid_moves = get_valid_moves(board, player)
+    for move in valid_moves:
+        new_board = make_move(copy.deepcopy(board), player, move)
+        child_node = generate_game_tree(new_board, WHITE if player == BLACK else BLACK, depth - 1)
+        child_node.move = move
+        node.children.append(child_node)
+
+    return node
+
+
+def minimax(node, depth, maximizing_player):
+    if depth == 0 or len(node.children) == 0:
+        return node.value
+
+    if maximizing_player:
+        max_value = float("-inf")
+        for child in node.children:
+            value = minimax(child, depth-1, False)
+            max_value = max(max_value, value)
+        return max_value
+    else:
+        min_value = float("inf")
+        for child in node.children:
+            value = minimax(child, depth-1, True)
+        min_value = min(min_value, value)
+        return min_value
+
+
+def find_best_move(board, player, depth):
+    game_tree = generate_game_tree(board, player, depth)
+    best_score = float("-inf")
+
+    for child in game_tree.children:
+        value = minimax(child, depth-1, False)
+        if value > best_score:
+            best_score = value
+            best_move = child.move
+
+    return best_move
+
+
 def is_valid_move(board, player, move):
     i, j = move
     if board[i][j] != EMPTY:
@@ -189,7 +238,6 @@ def start_game():
     board[4][4] = BLACK
 
     current_player = BLACK
-
     
     while True:
         if current_player == BLACK:
@@ -218,19 +266,17 @@ def start_game():
             if len(valid_moves) == 0:
                 break
 
-            print_board(board, valid_moves)
+            row, col = find_best_move(board, WHITE, 4)
+            print("WHITE plays:", row, col)
+            # make_move(board, row, col, WHITE)
 
-            try:
-                row, col = map(int, input("Enter row and col: ").split())
-            except Exception as e:
-                print("Invalid move.")
-            
-            while (row, col) not in valid_moves:
-                print("Invalid move.")
-                try:
-                    row, col = map(int, input("Enter row and col: ").split())
-                except Exception as e:
-                    pass
+            # best_move = None
+            # best_eval = float('-inf')
+            # for i, child in enumerate(game_tree.children):
+            #     eval_score = minimax(child, 4, False)
+            #     if eval_score > best_eval:
+            #         best_eval = eval_score
+            #         best_move = valid_moves[i]
             
             board = make_move(board, current_player, (row, col))
             current_player = BLACK
