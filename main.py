@@ -144,6 +144,8 @@ def minimax(node, depth, maximizing_player):
 def find_best_move(board, player, depth):
     game_tree = generate_game_tree(board, player, depth)
     best_score = float("-inf")
+    # alpha = float("-inf")
+    # beta = float("inf")
 
     for child in game_tree.children:
         value = minimax(child, depth-1, False)
@@ -215,6 +217,17 @@ def make_move(board, player, move):
     return board
 
 
+def get_score(board):
+    black_score = white_score = 0
+    for i in range(8):
+        for j in range(8):
+            if board[i][j] == BLACK:
+                black_score += 1
+            elif board[i][j] == WHITE:
+                white_score += 1
+    return black_score, white_score
+
+
 def cell_to_str(cell):
     if cell == EMPTY:
         return '.'
@@ -240,17 +253,17 @@ def start_game():
     current_player = BLACK
     
     while True:
+        valid_moves = get_valid_moves(board, current_player)
+        if len(valid_moves) == 0:
+            break
+        
         if current_player == BLACK:
-            valid_moves = get_valid_moves(board, current_player)
-            if len(valid_moves) == 0:
-                break
-
             print_board(board, valid_moves)
 
             try:
                 row, col = map(int, input("Enter row and col: ").split())
             except Exception as e:
-                print("Invalid move.")
+                pass
             
             while (row, col) not in valid_moves:
                 print("Invalid move.")
@@ -262,11 +275,7 @@ def start_game():
             board = make_move(board, current_player, (row, col))
             current_player = WHITE
         elif current_player == WHITE:
-            valid_moves = get_valid_moves(board, current_player)
-            if len(valid_moves) == 0:
-                break
-
-            row, col = find_best_move(board, WHITE, 4)
+            row, col = find_best_move(board, current_player, 4)
             print("WHITE plays:", row, col)
             # make_move(board, row, col, WHITE)
 
@@ -281,10 +290,17 @@ def start_game():
             board = make_move(board, current_player, (row, col))
             current_player = BLACK
         
-        # print_board(board, valid_moves)
-
-
-    # print_board(board, valid_moves)
+    black_score, white_score = get_score(board)
+    print("Game Over!")
+    print("-----")
+    print(f"Black score: {black_score}\nWhite Score: {white_score}")
+    print("-----")
+    if black_score > white_score:
+        print("Black wins!")
+    elif black_score < white_score:
+        print("White wins!")
+    else:
+        print("Draw!")
 
 if __name__ == "__main__":
     start_game()
