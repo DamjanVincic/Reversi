@@ -150,13 +150,13 @@ def minimax(node, depth, maximizing_player, alpha, beta):
 
 def find_best_move(board, player, depth):
     game_tree = generate_game_tree(board, player, depth)
-    best_score = float("-inf")
+    best_score = float("inf")
     alpha = float("-inf")
     beta = float("inf")
 
     for child in game_tree.children:
         value = minimax(child, depth-1, False, alpha, beta)
-        if value > best_score:
+        if value < best_score:
             best_score = value
             best_move = child.move
 
@@ -299,8 +299,11 @@ def start_game():
                     choice = int(input("Enter a choice: "))
                 except Exception as e:
                     pass
-            
+            row, col = find_best_move(board, current_player, 4)
+            # print(f"BLACK plays: {chr(ord('A') + col)}{row+1}")
+
             board = make_move(board, current_player, valid_moves[choice])
+            # board = make_move(board, current_player, (row, col))
             current_player = WHITE
         elif current_player == WHITE:
             print_board(board)
@@ -318,11 +321,13 @@ def start_game():
             
             board = make_move(board, current_player, (row, col))
             current_player = BLACK
-        
+    
+    print_board(board)
     black_score, white_score = get_score(board)
     print("Game Over!")
     print("-----")
-    print(f"Black score: {black_score}\nWhite Score: {white_score}")
+    print("Final Score")
+    print(tabulate([get_score(board)], headers = ['○', '●'], tablefmt = 'fancy_grid'))
     print("-----")
     if black_score > white_score:
         print("Black wins!")
