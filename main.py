@@ -112,7 +112,7 @@ def minimax(board, player, depth, maximizing_player, alpha, beta):
     valid_moves = get_valid_moves(board, player)
     if depth == 0 or len(valid_moves) == 0:
         opponent = WHITE if player == BLACK else BLACK
-        return evaluate(board, opponent) if maximizing_player else evaluate(board, opponent)
+        return evaluate(board, player) if maximizing_player else evaluate(board, opponent)
 
     if maximizing_player:
         max_value = float("-inf")
