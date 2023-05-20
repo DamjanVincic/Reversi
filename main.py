@@ -1,5 +1,6 @@
 from tabulate import tabulate
 import copy
+import random
 # from node import Node
 # from state import State
 
@@ -108,11 +109,38 @@ def evaluate(board, player):
     return score
 
 
+# zobrist_keys = [[random.getrandbits(64) for _ in range(8)] for _ in range(8)]
+zobrist_keys = {}
+for i in range(8):
+    for j in range(8):
+        for player in [BLACK, WHITE]:
+            zobrist_keys[(i, j, player)] = random.getrandbits(64)
+
+def hash_board(board):
+    board_hash = 0
+    for i in range(8):
+        for j in range(8):
+            if board[i][j] != EMPTY:
+                board_hash ^= zobrist_keys[(i, j, board[i][j])]
+    return board_hash
+
+
+transposition_table = {}
+evaluation_table = {}
+
 def minimax(board, player, depth, maximizing_player, alpha, beta):
+    board_hash = hash_board(board)
+    if board_hash in transposition_table:
+        return transposition_table[board_hash]
+
     valid_moves = get_valid_moves(board, player)
     if depth == 0 or len(valid_moves) == 0:
+        if board_hash in evaluation_table:
+            return evaluation_table[board_hash]
         opponent = WHITE if player == BLACK else BLACK
-        return evaluate(board, player) if maximizing_player else evaluate(board, opponent)
+        evaluation = evaluate(board, player) if maximizing_player else evaluate(board, opponent)
+        evaluation_table[board_hash] = evaluation
+        return evaluation
 
     if maximizing_player:
         max_value = float("-inf")
@@ -123,6 +151,8 @@ def minimax(board, player, depth, maximizing_player, alpha, beta):
             alpha = max(alpha, value)
             if beta <= alpha:
                 break
+        transposition_table[board_hash] = max_value
+        evaluation_table[board_hash] = max_value
         return max_value
     else:
         min_value = float("inf")
@@ -133,6 +163,8 @@ def minimax(board, player, depth, maximizing_player, alpha, beta):
             beta = min(beta, value)
             if beta <= alpha:
                 break
+        transposition_table[board_hash] = min_value
+        evaluation_table[board_hash] = min_value
         return min_value
 
 
@@ -288,7 +320,7 @@ def start_game():
                     choice = int(input("Enter a choice: "))
                 except Exception as e:
                     pass
-            row, col = find_best_move(board, current_player, 4)
+            # row, col = find_best_move(board, current_player, 4)
             # print(f"BLACK plays: {chr(ord('A') + col)}{row+1}")
 
             board = make_move(board, current_player, valid_moves[choice])
@@ -311,7 +343,8 @@ def start_game():
             board = make_move(board, current_player, (row, col))
             current_player = BLACK
     
-    print_board(board)
+    # print_board(board)
+
     black_score, white_score = get_score(board)
     print("Game Over!")
     print("-----")
