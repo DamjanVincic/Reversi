@@ -168,6 +168,15 @@ def minimax(board, player, depth, maximizing_player, alpha, beta):
         return min_value
 
 
+def dynamic_depth(board, depth):
+    black_score, white_score = get_score(board)
+    total_score = black_score + white_score
+
+    if 40 < total_score < 50:
+        return depth - 1
+    else:
+        return depth
+
 def find_best_move(board, player, depth):
     best_score = float("inf")
     best_move = None
@@ -320,7 +329,7 @@ def start_game():
                     choice = int(input("Enter a choice: "))
                 except Exception as e:
                     pass
-            # row, col = find_best_move(board, current_player, 4)
+            # row, col = find_best_move(board, current_player, dynamic_depth(board, 4))
             # print(f"BLACK plays: {chr(ord('A') + col)}{row+1}")
 
             board = make_move(board, current_player, valid_moves[choice])
@@ -328,7 +337,7 @@ def start_game():
             current_player = WHITE
         elif current_player == WHITE:
             print_board(board)
-            row, col = find_best_move(board, current_player, 4)
+            row, col = find_best_move(board, current_player, dynamic_depth(board, 4))
             print(f"WHITE plays: {chr(ord('A') + col)}{row+1}")
             # make_move(board, row, col, WHITE)
 
