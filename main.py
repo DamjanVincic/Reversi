@@ -1,6 +1,6 @@
 from tabulate import tabulate
 import copy
-from node import Node
+# from node import Node
 # from state import State
 
 EMPTY = 0
@@ -108,30 +108,17 @@ def evaluate(board, player):
     return score
 
 
-def generate_game_tree(board, player, depth):
-    node = Node(board, player)
-    if depth == 0 or len(get_valid_moves(board, player)) == 0:
-        node.value = evaluate(board, BLACK)
-        return node
-
+def minimax(board, player, depth, maximizing_player, alpha, beta):
     valid_moves = get_valid_moves(board, player)
-    for move in valid_moves:
-        new_board = make_move(copy.deepcopy(board), player, move)
-        child_node = generate_game_tree(new_board, WHITE if player == BLACK else BLACK, depth - 1)
-        child_node.move = move
-        node.children.append(child_node)
-
-    return node
-
-
-def minimax(node, depth, maximizing_player, alpha, beta):
-    if depth == 0 or len(node.children) == 0:
-        return node.value
+    if depth == 0 or len(valid_moves) == 0:
+        opponent = WHITE if player == BLACK else BLACK
+        return evaluate(board, opponent) if maximizing_player else evaluate(board, opponent)
 
     if maximizing_player:
         max_value = float("-inf")
-        for child in node.children:
-            value = minimax(child, depth-1, False, alpha, beta)
+        for move in valid_moves:
+            new_board = make_move(copy.deepcopy(board), player, move)
+            value = minimax(new_board, WHITE if player == BLACK else BLACK, depth-1, False, alpha, beta)
             max_value = max(max_value, value)
             alpha = max(alpha, value)
             if beta <= alpha:
@@ -139,8 +126,9 @@ def minimax(node, depth, maximizing_player, alpha, beta):
         return max_value
     else:
         min_value = float("inf")
-        for child in node.children:
-            value = minimax(child, depth-1, True, alpha, beta)
+        for move in valid_moves:
+            new_board = make_move(copy.deepcopy(board), player, move)
+            value = minimax(new_board, WHITE if player == BLACK else BLACK, depth-1, True, alpha, beta)
             min_value = min(min_value, value)
             beta = min(beta, value)
             if beta <= alpha:
@@ -149,16 +137,17 @@ def minimax(node, depth, maximizing_player, alpha, beta):
 
 
 def find_best_move(board, player, depth):
-    game_tree = generate_game_tree(board, player, depth)
     best_score = float("inf")
-    alpha = float("-inf")
-    beta = float("inf")
+    best_move = None
+    # alpha = float("-inf")
+    # beta = float("inf")
 
-    for child in game_tree.children:
-        value = minimax(child, depth-1, False, alpha, beta)
+    for move in get_valid_moves(board, player):
+        new_board = make_move(copy.deepcopy(board), player, move)
+        value = minimax(new_board, BLACK if player == WHITE else WHITE, depth-1, True, float("-inf"), float("inf"))
         if value < best_score:
             best_score = value
-            best_move = child.move
+            best_move = move
 
     return best_move
 
