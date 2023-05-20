@@ -123,32 +123,38 @@ def generate_game_tree(board, player, depth):
     return node
 
 
-def minimax(node, depth, maximizing_player):
+def minimax(node, depth, maximizing_player, alpha, beta):
     if depth == 0 or len(node.children) == 0:
         return node.value
 
     if maximizing_player:
         max_value = float("-inf")
         for child in node.children:
-            value = minimax(child, depth-1, False)
+            value = minimax(child, depth-1, False, alpha, beta)
             max_value = max(max_value, value)
+            alpha = max(alpha, value)
+            if beta <= alpha:
+                break
         return max_value
     else:
         min_value = float("inf")
         for child in node.children:
-            value = minimax(child, depth-1, True)
-        min_value = min(min_value, value)
+            value = minimax(child, depth-1, True, alpha, beta)
+            min_value = min(min_value, value)
+            beta = min(beta, value)
+            if beta <= alpha:
+                break
         return min_value
 
 
 def find_best_move(board, player, depth):
     game_tree = generate_game_tree(board, player, depth)
     best_score = float("-inf")
-    # alpha = float("-inf")
-    # beta = float("inf")
+    alpha = float("-inf")
+    beta = float("inf")
 
     for child in game_tree.children:
-        value = minimax(child, depth-1, False)
+        value = minimax(child, depth-1, False, alpha, beta)
         if value > best_score:
             best_score = value
             best_move = child.move
