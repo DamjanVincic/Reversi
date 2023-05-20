@@ -1,6 +1,7 @@
 from tabulate import tabulate
 import copy
 from node import Node
+# from state import State
 
 EMPTY = 0
 BLACK = 1
@@ -110,7 +111,7 @@ def evaluate(board, player):
 def generate_game_tree(board, player, depth):
     node = Node(board, player)
     if depth == 0 or len(get_valid_moves(board, player)) == 0:
-        node.value = evaluate(board, player)
+        node.value = evaluate(board, BLACK)
         return node
 
     valid_moves = get_valid_moves(board, player)
@@ -238,13 +239,30 @@ def cell_to_str(cell):
     if cell == EMPTY:
         return '.'
     elif cell == BLACK:
-        return 'B'
+        return '○'
     elif cell == WHITE:
-        return 'W'
+        return '●'
 
-def print_board(board, valid_moves):
-    header = [str(col) for col in range(8)]
-    table = [[str(i)] + [cell_to_str(board[i][j]) if (i, j) not in valid_moves else '?' for j in range(8)] for i in range(8)]
+def print_board(board, valid_moves: dict = None):
+    header = [chr(ord('A') + col) for col in range(8)]
+    if valid_moves:
+        # table = [[str(i)] + [cell_to_str(board[i][j]) if (i, j) not in valid_moves.values() else filter(lambda k, v: v == (i, j), valid_moves) for j in range(8)] for i in range(8)]
+        table = []
+        for i in range(8):
+            row = [str(i+1)]
+            for j in range(8):
+                found = False
+                for k, v in valid_moves.items():
+                    if v == (i, j):
+                        row.append(k)
+                        found = True
+                        break
+                if not found:
+                    row.append(cell_to_str(board[i][j]))
+            table.append(row)
+                
+    else:
+        table = [[str(i+1)] + [cell_to_str(board[i][j]) for j in range(8)] for i in range(8)]
     print(tabulate(table, headers = header, tablefmt = 'fancy_grid'))
     print()
 
@@ -257,6 +275,7 @@ def start_game():
     board[4][4] = BLACK
 
     current_player = BLACK
+    # state = State()
     
     while True:
         valid_moves = get_valid_moves(board, current_player)
@@ -264,25 +283,29 @@ def start_game():
             break
         
         if current_player == BLACK:
+            valid_moves = {k:v for k, v in enumerate(valid_moves, start = 1)}
             print_board(board, valid_moves)
 
             try:
-                row, col = map(int, input("Enter row and col: ").split())
+                # row, col = map(int, input("Enter row and col: ").split())
+                choice = int(input("Enter a choice: "))
             except Exception as e:
                 pass
             
-            while (row, col) not in valid_moves:
+            while choice not in valid_moves:
                 print("Invalid move.")
                 try:
-                    row, col = map(int, input("Enter row and col: ").split())
+                    # row, col = map(int, input("Enter row and col: ").split())
+                    choice = int(input("Enter a choice: "))
                 except Exception as e:
                     pass
             
-            board = make_move(board, current_player, (row, col))
+            board = make_move(board, current_player, valid_moves[choice])
             current_player = WHITE
         elif current_player == WHITE:
+            print_board(board)
             row, col = find_best_move(board, current_player, 4)
-            print("WHITE plays:", row, col)
+            print(f"WHITE plays: {chr(ord('A') + col)}{row+1}")
             # make_move(board, row, col, WHITE)
 
             # best_move = None
