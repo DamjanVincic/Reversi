@@ -274,7 +274,7 @@ def get_score(board):
 
 def cell_to_str(cell):
     if cell == EMPTY:
-        return '.'
+        return ' '
     elif cell == BLACK:
         return '○'
     elif cell == WHITE:
