@@ -116,13 +116,16 @@ for i in range(8):
     for j in range(8):
         for player in [BLACK, WHITE]:
             zobrist_keys[(i, j, player)] = random.getrandbits(64)
+black_turn_to_play = random.getrandbits(64)
 
-def hash_board(board):
+def hash_board(board, player):
     board_hash = 0
     for i in range(8):
         for j in range(8):
             if board[i][j] != EMPTY:
                 board_hash ^= zobrist_keys[(i, j, board[i][j])]
+    if player == BLACK:
+        board_hash ^= black_turn_to_play
     return board_hash
 
 
