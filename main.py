@@ -2,8 +2,6 @@ from tabulate import tabulate
 import copy
 import random
 import time
-# from node import Node
-# from state import State
 
 EMPTY = 0
 BLACK = 1
@@ -15,7 +13,6 @@ directions = [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 
 def evaluate(board, player):
     opponent = WHITE if player == BLACK else BLACK
     player_tiles = opponent_tiles = player_front_tiles = opponent_front_tiles = 0
-    # d = p = f = c = l = m = 0
     d = 0
 
     weigths = [
@@ -82,8 +79,6 @@ def evaluate(board, player):
         (7, 7, [(6, 7), (6, 6), (7, 6)])
     ]
 
-    # my_corner_tiles = 0
-    # opp_corner_tiles = 0
     player_tiles = opponent_tiles = 0
 
     for x, y, adjacent_tiles in corner_closeness:
@@ -110,7 +105,6 @@ def evaluate(board, player):
     return score
 
 
-# zobrist_keys = [[random.getrandbits(64) for _ in range(8)] for _ in range(8)]
 zobrist_keys = {}
 for i in range(8):
     for j in range(8):
@@ -156,7 +150,6 @@ def minimax(board, player, depth, maximizing_player, alpha, beta, start_time, ti
             if beta <= alpha:
                 break
         transposition_table[board_hash] = {'value': max_value, 'depth': depth}
-        # evaluation_table[board_hash] = max_value
         return max_value
     else:
         min_value = float("inf")
@@ -168,7 +161,6 @@ def minimax(board, player, depth, maximizing_player, alpha, beta, start_time, ti
             if beta <= alpha:
                 break
         transposition_table[board_hash] = {'value': min_value, 'depth': depth}
-        # evaluation_table[board_hash] = min_value
         return min_value
 
 
@@ -182,11 +174,8 @@ def dynamic_depth(board, depth):
         return depth
 
 def find_best_move(board, player, depth, start_time, time_limit):
-    # start_time = time.time()
     best_value = float("inf")
     best_move = None
-    # alpha = float("-inf")
-    # beta = float("inf")
 
     for move in get_valid_moves(board, player):
         new_board = make_move(copy.deepcopy(board), player, move)
@@ -283,7 +272,6 @@ def cell_to_str(cell):
 def print_board(board, valid_moves: dict = None):
     header = [chr(ord('A') + col) for col in range(8)]
     if valid_moves:
-        # table = [[str(i)] + [cell_to_str(board[i][j]) if (i, j) not in valid_moves.values() else filter(lambda k, v: v == (i, j), valid_moves) for j in range(8)] for i in range(8)]
         table = []
         for i in range(8):
             row = [str(i+1)]
@@ -310,8 +298,6 @@ def get_best_move_within_time_limit(board, player, time_limit):
     best_move = None
 
     while time.time() - start_time <= time_limit:
-        # if time.time() - start_time > time_limit:
-        #     break
         best_move = find_best_move(board, player, depth, start_time, time_limit)
         depth += 1
 
@@ -326,7 +312,6 @@ def start_game():
     board[4][4] = BLACK
 
     current_player = BLACK
-    # state = State()
     
     while True:
         valid_moves = get_valid_moves(board, current_player)
@@ -338,7 +323,6 @@ def start_game():
             print_board(board, valid_moves)
 
             try:
-                # row, col = map(int, input("Enter row and col: ").split())
                 choice = int(input("Enter a choice: "))
             except Exception as e:
                 pass
@@ -346,31 +330,16 @@ def start_game():
             while choice not in valid_moves:
                 print("Invalid move.")
                 try:
-                    # row, col = map(int, input("Enter row and col: ").split())
                     choice = int(input("Enter a choice: "))
                 except Exception as e:
                     pass
 
             board = make_move(board, current_player, valid_moves[choice])
-            # row, col = find_best_move(board, current_player, depth, start_time, 3)
-            # row, col = get_best_move_within_time_limit(board, current_player, 3)
-            # print(f"BLACK plays: {chr(ord('A') + col)}{row+1} - Time: {end_time - start_time:.2f}")
-            # board = make_move(board, current_player, (row, col))
             current_player = WHITE
         elif current_player == WHITE:
             print_board(board)
             row, col = get_best_move_within_time_limit(board, current_player, 3)
-            # row, col = find_best_move(board, current_player, depth, start_time, 3)
             print(f"WHITE plays: {chr(ord('A') + col)}{row+1}")
-            # make_move(board, row, col, WHITE)
-
-            # best_move = None
-            # best_eval = float('-inf')
-            # for i, child in enumerate(game_tree.children):
-            #     eval_score = minimax(child, 4, False)
-            #     if eval_score > best_eval:
-            #         best_eval = eval_score
-            #         best_move = valid_moves[i]
             
             board = make_move(board, current_player, (row, col))
             current_player = BLACK
