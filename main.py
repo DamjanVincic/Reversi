@@ -1,6 +1,7 @@
 from tabulate import tabulate
 import copy
 import random
+import time
 # from node import Node
 # from state import State
 
@@ -128,13 +129,13 @@ def hash_board(board):
 transposition_table = {}
 evaluation_table = {}
 
-def minimax(board, player, depth, maximizing_player, alpha, beta):
-    board_hash = hash_board(board)
+def minimax(board, player, depth, maximizing_player, alpha, beta, start_time, time_limit):
+    board_hash = hash_board(board, player)
     if board_hash in transposition_table:
         return transposition_table[board_hash]
 
     valid_moves = get_valid_moves(board, player)
-    if depth == 0 or len(valid_moves) == 0:
+    if depth == 0 or len(valid_moves) == 0 or time.time() - start_time > time_limit:
         if board_hash in evaluation_table:
             return evaluation_table[board_hash]
         opponent = WHITE if player == BLACK else BLACK
@@ -146,25 +147,25 @@ def minimax(board, player, depth, maximizing_player, alpha, beta):
         max_value = float("-inf")
         for move in valid_moves:
             new_board = make_move(copy.deepcopy(board), player, move)
-            value = minimax(new_board, WHITE if player == BLACK else BLACK, depth-1, False, alpha, beta)
+            value = minimax(new_board, WHITE if player == BLACK else BLACK, depth-1, False, alpha, beta, start_time, time_limit)
             max_value = max(max_value, value)
             alpha = max(alpha, value)
             if beta <= alpha:
                 break
         transposition_table[board_hash] = max_value
-        evaluation_table[board_hash] = max_value
+        # evaluation_table[board_hash] = max_value
         return max_value
     else:
         min_value = float("inf")
         for move in valid_moves:
             new_board = make_move(copy.deepcopy(board), player, move)
-            value = minimax(new_board, WHITE if player == BLACK else BLACK, depth-1, True, alpha, beta)
+            value = minimax(new_board, WHITE if player == BLACK else BLACK, depth-1, True, alpha, beta, start_time, time_limit)
             min_value = min(min_value, value)
             beta = min(beta, value)
             if beta <= alpha:
                 break
         transposition_table[board_hash] = min_value
-        evaluation_table[board_hash] = min_value
+        # evaluation_table[board_hash] = min_value
         return min_value
 
 
@@ -177,7 +178,8 @@ def dynamic_depth(board, depth):
     else:
         return depth
 
-def find_best_move(board, player, depth):
+def find_best_move(board, player, depth, start_time, time_limit):
+    # start_time = time.time()
     best_score = float("inf")
     best_move = None
     # alpha = float("-inf")
@@ -185,10 +187,12 @@ def find_best_move(board, player, depth):
 
     for move in get_valid_moves(board, player):
         new_board = make_move(copy.deepcopy(board), player, move)
-        value = minimax(new_board, BLACK if player == WHITE else WHITE, depth-1, True, float("-inf"), float("inf"))
+        value = minimax(new_board, BLACK if player == WHITE else WHITE, depth-1, True, float("-inf"), float("inf"), start_time, time_limit)
         if value < best_score:
             best_score = value
             best_move = move
+        if time.time() - start_time > time_limit:
+            break
 
     return best_move
 
@@ -297,6 +301,23 @@ def print_board(board, valid_moves: dict = None):
     print()
 
 
+def get_best_move_within_time_limit(board, player, time_limit):
+    global transposition_table
+    start_time = time.time()
+    depth = 6
+    best_move = None
+
+    while True: # time.time() - start_time < time_limit:
+        if time.time() - start_time > time_limit:
+            break
+        move = find_best_move(board, player, depth, start_time, time_limit)
+        transposition_table.clear() # da ne bi koristio rezultate sa manje dubine na vecoj
+        best_move = move
+        depth += 1
+
+    return best_move
+
+
 def start_game():
     board = [[EMPTY]*8 for _ in range(8)]
     board[3][3] = BLACK
@@ -329,15 +350,13 @@ def start_game():
                     choice = int(input("Enter a choice: "))
                 except Exception as e:
                     pass
-            # row, col = find_best_move(board, current_player, dynamic_depth(board, 4))
-            # print(f"BLACK plays: {chr(ord('A') + col)}{row+1}")
 
             board = make_move(board, current_player, valid_moves[choice])
             # board = make_move(board, current_player, (row, col))
             current_player = WHITE
         elif current_player == WHITE:
             print_board(board)
-            row, col = find_best_move(board, current_player, dynamic_depth(board, 4))
+            row, col = get_best_move_within_time_limit(board, current_player, 3)
             print(f"WHITE plays: {chr(ord('A') + col)}{row+1}")
             # make_move(board, row, col, WHITE)
 
@@ -352,7 +371,7 @@ def start_game():
             board = make_move(board, current_player, (row, col))
             current_player = BLACK
     
-    # print_board(board)
+    print_board(board)
 
     black_score, white_score = get_score(board)
     print("Game Over!")
