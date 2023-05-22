@@ -132,7 +132,6 @@ class State(object):
                     new_j += dj
 
         self._player = opponent
-        # return self._board # ne vracati tablu vec je samo izmeniti kao atribut objekta
 
     def hash_board(self):
         board_hash = 0

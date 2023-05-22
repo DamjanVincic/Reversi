@@ -17,7 +17,6 @@ class Computer(object):
         while time.time() - start_time <= time_limit:
             best_move = self.find_best_move(state, depth, start_time, time_limit)
             depth += 1
-
         return best_move
     
     def find_best_move(self, state: State, depth, start_time, time_limit):
@@ -26,7 +25,6 @@ class Computer(object):
 
         for move in state.get_valid_moves():
             state_copy = copy.deepcopy(state)
-            # new_board = make_move(copy.deepcopy(board), player, move)
             state_copy.make_move(move)
             value = self.minimax(state_copy, depth-1, True, float("-inf"), float("inf"), start_time, time_limit)
             if value < best_value:
@@ -34,7 +32,6 @@ class Computer(object):
                 best_move = move
             if time.time() - start_time > time_limit:
                 break
-
         return best_move
     
     def minimax(self, state: State, depth, maximizing_player, alpha, beta, start_time, time_limit):
@@ -49,7 +46,7 @@ class Computer(object):
             opponent = Player.WHITE if state.player == Player.BLACK else Player.BLACK
 
             if maximizing_player:
-                evaluation = state.evaluate() # if maximizing_player else evaluate(board, opponent)
+                evaluation = state.evaluate()
             else:
                 opponent_state = copy.deepcopy(state)
                 opponent_state.player = opponent
@@ -61,7 +58,6 @@ class Computer(object):
         if maximizing_player:
             max_value = float("-inf")
             for move in valid_moves:
-                # new_board = make_move(copy.deepcopy(board), player, move)
                 state_copy = copy.deepcopy(state)
                 state_copy.make_move(move)
                 value = self.minimax(state_copy, depth-1, False, alpha, beta, start_time, time_limit)
@@ -76,7 +72,6 @@ class Computer(object):
             for move in valid_moves:
                 state_copy = copy.deepcopy(state)
                 state_copy.make_move(move)
-                # new_board = make_move(copy.deepcopy(board), player, move)
                 value = self.minimax(state_copy, depth-1, True, alpha, beta, start_time, time_limit)
                 min_value = min(min_value, value)
                 beta = min(beta, value)
