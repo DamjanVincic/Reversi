@@ -33,7 +33,7 @@ def start_game():
         elif state.player == Player.WHITE:
             state.print_board()
             row, col = computer.get_best_move_within_time_limit(state, 3)
-            print(f"{state.player.name} plays: {chr(ord('A') + col)}{row+1}")
+            print(f"{state.player.name.capitalize()} plays: {chr(ord('A') + col)}{row+1}")
             
             state.make_move((row, col))
     
