@@ -6,7 +6,6 @@ from models.player import Player
 class Computer(object):
     def __init__(self):
         self._transposition_table = {}
-        self._evaluation_table = {}
 
 
     def get_best_move_within_time_limit(self, state: State, time_limit):
@@ -48,8 +47,6 @@ class Computer(object):
 
         valid_moves = state.get_valid_moves()
         if depth == 0 or len(valid_moves) == 0:
-            # if board_hash in self._evaluation_table:
-            #     return self._evaluation_table[board_hash]
             opponent = Player.WHITE if state.player == Player.BLACK else Player.BLACK
 
             if maximizing_player:
@@ -59,7 +56,6 @@ class Computer(object):
                 opponent_state.player = opponent
                 evaluation = opponent_state.evaluate()
             
-            # self._evaluation_table[board_hash] = evaluation
             self._transposition_table[board_hash] = {'value': evaluation, 'depth': depth}
             return evaluation
 
