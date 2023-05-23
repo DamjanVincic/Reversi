@@ -11,11 +11,15 @@ class Computer(object):
 
     def get_best_move_within_time_limit(self, state: State, time_limit):
         start_time = time.time()
-        depth = 4
+        depth = 3
         best_move = None
 
-        while time.time() - start_time <= time_limit:
-            best_move = self.find_best_move(state, depth, start_time, time_limit)
+        while True:
+            try:
+                move = self.find_best_move(state, depth, start_time, time_limit)
+            except TimeoutError:
+                break
+            best_move = move
             depth += 1
         return best_move
     
@@ -39,10 +43,13 @@ class Computer(object):
         if board_hash in self._transposition_table and self._transposition_table[board_hash]['depth'] >= depth:
             return self._transposition_table[board_hash]['value']
 
+        if time.time() - start_time > time_limit:
+            raise TimeoutError
+
         valid_moves = state.get_valid_moves()
-        if depth == 0 or len(valid_moves) == 0 or time.time() - start_time > time_limit:
-            if board_hash in self._evaluation_table:
-                return self._evaluation_table[board_hash]
+        if depth == 0 or len(valid_moves) == 0:
+            # if board_hash in self._evaluation_table:
+            #     return self._evaluation_table[board_hash]
             opponent = Player.WHITE if state.player == Player.BLACK else Player.BLACK
 
             if maximizing_player:
@@ -52,7 +59,8 @@ class Computer(object):
                 opponent_state.player = opponent
                 evaluation = opponent_state.evaluate()
             
-            self._evaluation_table[board_hash] = evaluation
+            # self._evaluation_table[board_hash] = evaluation
+            self._transposition_table[board_hash] = {'value': evaluation, 'depth': depth}
             return evaluation
 
         if maximizing_player:
@@ -65,7 +73,7 @@ class Computer(object):
                 alpha = max(alpha, value)
                 if beta <= alpha:
                     break
-            self._transposition_table[board_hash] = {'value': max_value, 'depth': depth}
+            self._transposition_table[board_hash] = {'value': alpha, 'depth': depth}
             return max_value
         else:
             min_value = float("inf")
@@ -77,7 +85,7 @@ class Computer(object):
                 beta = min(beta, value)
                 if beta <= alpha:
                     break
-            self._transposition_table[board_hash] = {'value': min_value, 'depth': depth}
+            self._transposition_table[board_hash] = {'value': beta, 'depth': depth}
             return min_value
         
     
