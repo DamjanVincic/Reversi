@@ -17,6 +17,7 @@ def start_game():
             valid_moves = {k:v for k, v in enumerate(valid_moves, start = 1)}
             state.print_board()
 
+            choice = None
             try:
                 choice = int(input("Enter a choice: "))
             except Exception as e:

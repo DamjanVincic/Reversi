@@ -30,7 +30,7 @@ class Computer(object):
             state_copy = copy.deepcopy(state)
             state_copy.make_move(move)
             value = self.minimax(state_copy, depth-1, True, float("-inf"), float("inf"), start_time, time_limit)
-            if value < best_value:
+            if value <= best_value:
                 best_value = value
                 best_move = move
             if time.time() - start_time > time_limit:
@@ -46,6 +46,19 @@ class Computer(object):
             raise TimeoutError
 
         valid_moves = state.get_valid_moves()
+        if len(valid_moves) == 0:
+            black_score, white_score = state.get_score()
+            if black_score > white_score:
+                if maximizing_player:
+                    return float("inf") if state.player == Player.BLACK else float("-inf")
+                else:
+                    return float("-inf") if state.player == Player.BLACK else float("inf")
+            elif black_score < white_score:
+                if maximizing_player:
+                    return float("-inf") if state.player == Player.BLACK else float("inf")
+                else:
+                    return float("inf") if state.player == Player.BLACK else float("-inf")
+
         if depth == 0 or len(valid_moves) == 0:
             opponent = Player.WHITE if state.player == Player.BLACK else Player.BLACK
 
@@ -69,7 +82,7 @@ class Computer(object):
                 alpha = max(alpha, value)
                 if beta <= alpha:
                     break
-            self._transposition_table[board_hash] = {'value': alpha, 'depth': depth}
+            self._transposition_table[board_hash] = {'value': max_value, 'depth': depth}
             return max_value
         else:
             min_value = float("inf")
@@ -81,7 +94,7 @@ class Computer(object):
                 beta = min(beta, value)
                 if beta <= alpha:
                     break
-            self._transposition_table[board_hash] = {'value': beta, 'depth': depth}
+            self._transposition_table[board_hash] = {'value': min_value, 'depth': depth}
             return min_value
         
     
