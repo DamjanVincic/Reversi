@@ -48,16 +48,20 @@ class Computer(object):
         valid_moves = state.get_valid_moves()
         if len(valid_moves) == 0:
             black_score, white_score = state.get_score()
+            value = None
             if black_score > white_score:
                 if maximizing_player:
-                    return float("inf") if state.player == Player.BLACK else float("-inf")
+                    value = float("inf") if state.player == Player.BLACK else float("-inf")
                 else:
-                    return float("-inf") if state.player == Player.BLACK else float("inf")
+                    value = float("-inf") if state.player == Player.BLACK else float("inf")
             elif black_score < white_score:
                 if maximizing_player:
-                    return float("-inf") if state.player == Player.BLACK else float("inf")
+                    value = float("-inf") if state.player == Player.BLACK else float("inf")
                 else:
-                    return float("inf") if state.player == Player.BLACK else float("-inf")
+                    value = float("inf") if state.player == Player.BLACK else float("-inf")
+            if value:
+                self._transposition_table[board_hash] = {'value': value, 'depth': depth}
+                return value
 
         if depth == 0 or len(valid_moves) == 0:
             opponent = Player.WHITE if state.player == Player.BLACK else Player.BLACK
